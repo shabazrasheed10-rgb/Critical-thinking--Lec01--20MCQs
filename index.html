@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Medical Terminology Quiz</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"> 
+  <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #E5E4E2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            
+            padding: 20px;
+        }
+      
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+        .option-button:hover:not(.answered) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        /* Icon styles */
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feedback-icon-visible {
+            opacity: 1;
+        }
+    </style> 
+ </head> 
+ <body> 
+  <div id="quiz-container" class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-6 md:p-10"> <!-- Header: Score and Progress --> 
+   <div class="flex justify-between items-center mb-6 border-b pb-4 border-gray-200"> 
+    <h1 class="text-3xl font-bold text-blue-600">Critical thinking Quiz Lec-1</h1> 
+    <div class="text-lg font-semibold text-gray-700">
+      Score: <span id="score-display" class="text-green-600">0</span> / <span id="total-questions">20</span> 
+    </div> 
+   </div> <!-- Question Display --> 
+   <div id="question-card" class="mb-8 min-h-24"> 
+    <p class="text-2xl font-semibold text-gray-800 mb-4" id="question-text"> Loading question... </p> 
+    <div id="options-container" class="space-y-4">
+    </div> 
+   </div> <!-- Navigation and Progress --> 
+   <div class="flex justify-between items-center pt-4 border-t border-gray-200"> 
+    <div class="text-lg text-gray-600 font-medium">
+      Question <span id="current-q-number">0</span> of 20 
+    </div> <button id="next-button" onclick="nextQuestion()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition duration-150 ease-in-out disabled:bg-gray-400" disabled> Next Question </button> 
+   </div> <!-- Final Score Modal --> 
+   <div id="final-score-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50"> 
+    <div class="bg-white rounded-xl p-8 text-center shadow-2xl w-full max-w-sm"> 
+     <h2 class="text-4xl font-extrabold text-blue-600 mb-4">Quiz Complete!</h2> 
+     <p class="text-xl text-gray-700 mb-6">Your final score is:</p> 
+     <p class="text-6xl font-black text-green-700 mb-8" id="final-score-text">0 / 20</p> <button onclick="window.location.reload()" class="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition duration-150"> Start Over </button> 
+    </div> 
+   </div> 
+  </div> 
+  <script>
+      
+        const quizData = [
+          
+          {
+    question: '1. Thinking is defined as a mental process involving:',
+    options: ['A) Only remembering events', 'B) Generating ideas and solving problems', 'C) Emotional reaction to information', 'D) Automatic decision-making', 'E) Copying information from memory'],
+    answer: 'B) Generating ideas and solving problems'
+},
+{
+    question: '2. Critical thinking primarily involves:',
+    options: ['A) Making quick judgments', 'B) Accepting information as it is', 'C) Thinking clearly, logically, and independently', 'D) Memorizing facts', 'E) Following authority without question'],
+    answer: 'C) Thinking clearly, logically, and independently'
+},
+{
+    question: '3. Which of the following best describes analytical thinking?',
+    options: ['A) Creating new ideas', 'B) Observing without interpretation', 'C) Reviewing past experiences', 'D) Breaking complex issues into parts', 'E) Accepting information at face value'],
+    answer: 'D) Breaking complex issues into parts'
+},
+{
+    question: '4. Designing a new method for patient counseling is an example of:',
+    options: ['A) Creative thinking', 'B) Critical thinking', 'C) Analytical thinking', 'D) Reflective thinking', 'E) Scientific thinking'],
+    answer: 'A) Creative thinking'
+},
+{
+    question: '5. Identifying whether abnormal lab values are due to disease or error is an example of:',
+    options: ['A) Ordinary thinking', 'B) Memory-based thinking', 'C) Emotional thinking', 'D) Creative thinking', 'E) Critical thinking'],
+    answer: 'E) Critical thinking'
+},
+{
+    question: '6. Which type of thinking involves systematic observation and hypothesis testing?',
+    options: ['A) Reflective', 'B) Creative', 'C) Analytical', 'D) Scientific', 'E) Ordinary'],
+    answer: 'D) Scientific'
+},
+{
+    question: '7. Ordinary thinking is MOST characterized by:',
+    options: ['A) Logical structure', 'B) Quick judgment', 'C) Evidence evaluation', 'D) Recognizing bias', 'E) Independent reasoning'],
+    answer: 'B) Quick judgment'
+},
+{
+    question: '8. A critical thinker ALWAYS tries to:',
+    options: ['A) Evaluate evidence carefully', 'B) Depend only on memory', 'C) Avoid questioning information', 'D) Make decisions quickly', 'E) Rely on emotions'],
+    answer: 'A) Evaluate evidence carefully'
+},
+{
+    question: '9. “Notice relevant details” is a description of which skill?',
+    options: ['A) Interpretation', 'B) Explanation', 'C) Observation', 'D) Evaluation', 'E) Self-regulation'],
+    answer: 'C) Observation'
+},
+{
+    question: '10. Drawing logical conclusions based on evidence is called:',
+    options: ['A) Analysis', 'B) Inference', 'C) Explanation', 'D) Evaluation', 'E) Interpretation'],
+    answer: 'B) Inference'
+},
+{
+    question: '11. Understanding the meaning of data refers to:',
+    options: ['A) Interpretation', 'B) Observation', 'C) Inference', 'D) Self-regulation', 'E) Explanation'],
+    answer: 'A) Interpretation'
+},
+{
+    question: '12. Which habit shows willingness to hear opposing views?',
+    options: ['A) Humility', 'B) Curiosity', 'C) Courage', 'D) Skepticism', 'E) Open-mindedness'],
+    answer: 'E) Open-mindedness'
+},
+{
+    question: '13. A student who accepts when he is wrong demonstrates:',
+    options: ['A) Confidence', 'B) Creativity', 'C) Skepticism ', 'D) Humility', 'E) Fair-mindedness'],
+    answer: 'D) Humility'
+},
+{
+    question: '14. Which habit requires demanding clear evidence before accepting a claim?',
+    options: ['A) Curiosity', 'B) Open-mindedness', 'C) Skepticism', 'D) Humility', 'E) Courage'],
+    answer: 'C) Skepticism'
+},
+{
+    question: '15. Fair-mindedness means:',
+    options: ['A) Considering all perspectives equally', 'B) Trusting only your own views', 'C) Always agreeing with others', 'D) Never questioning authority', 'E) Making decisions quickly'],
+    answer: 'A) Considering all perspectives equally'
+},
+{
+    question: '16. Self-regulation in critical thinking involves:',
+    options: ['A) Observing other people', 'B) Reflecting on your own thought process', 'C) Memorizing information', 'D) Avoiding mistakes', 'E) Making emotional decisions'],
+    answer: 'B) Reflecting on your own thought process'
+},
+{
+    question: '17. Clinical reasoning depends on:',
+    options: ['A) Accepting assumptions', 'B) Ignoring lab results', 'C) Following emotions', 'D) Evaluating multiple data sources', 'E) Making automatic judgments'],
+    answer: 'D) Evaluating multiple data sources'
+},
+{
+    question: '18. Which of the following is a feature of critical thinking but NOT ordinary thinking?',
+    options: ['A) Spontaneous reaction', 'B) Emotional influence', 'C) Bias-driven decisions', 'D) Quick conclusions', 'E) Logical and structured approach'],
+    answer: 'E) Logical and structured approach'
+},
+{
+    question: '19. Reflective thinking is BEST described as:',
+    options: ['A) Generating new ideas', 'B) Testing hypotheses', 'C) Reviewing experiences to improve', 'D) Breaking problems into parts', 'E) Accepting information without question'],
+    answer: 'C) Reviewing experiences to improve'
+},
+{
+    question: '20. A trained clinician must be a critical thinker because:',
+    options: ['A) Critical thinking prevents medical errors', 'B) Patients prefer emotional decision-making', 'C) Medicine depends mostly on memory', 'D) Doctors should avoid questioning evidence', 'E) Evidence-based medicine is unimportant'],
+    answer: 'A) Critical thinking prevents medical errors'
+}
+    
+
+          
+         ];
+
+
+
+        
+      
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        const totalQuestions = quizData.length;
+
+        // --- DOM ELEMENTS ---
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const currentQNumber = document.getElementById('current-q-number');
+        const nextButton = document.getElementById('next-button');
+        const finalScoreModal = document.getElementById('final-score-modal');
+        const finalScoreText = document.getElementById('final-score-text');
+
+        // --- UTILITY ICONS (Inline SVG for instant rendering) ---
+        const correctIconSVG = `
+            <svg class="feedback-icon text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>`;
+        const incorrectIconSVG = `
+            <svg class="feedback-icon text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>`;
+        
+        // --- QUIZ LOGIC FUNCTIONS ---
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                showFinalScore();
+                return;
+            }
+
+            const currentQ = quizData[currentQuestionIndex];
+            answered = false;
+            nextButton.disabled = true;
+            optionsContainer.innerHTML = '';
+
+            questionText.textContent = currentQ.question;
+            currentQNumber.textContent = currentQuestionIndex + 1;
+
+            currentQ.options.forEach((optionText, index) => {
+                const optionButton = document.createElement('button');
+                optionButton.className = 'option-button w-full p-4 bg-gray-100 rounded-xl font-medium text-gray-700 shadow-sm border border-gray-200';
+                optionButton.setAttribute('data-option', optionText);
+                optionButton.innerHTML = `
+                    <span class="flex-1">${optionText}</span>
+                    <span class="feedback-placeholder"></span>
+                `;
+                optionButton.onclick = () => selectOption(optionText, optionButton);
+                optionsContainer.appendChild(optionButton);
+            });
+        }
+
+        function selectOption(selectedOptionText, selectedButton) {
+            if (answered) {
+                return; // Prevent multiple clicks on the current question
+            }
+            answered = true;
+            nextButton.disabled = false;
+            
+            const currentQ = quizData[currentQuestionIndex];
+            const isCorrect = selectedOptionText === currentQ.answer;
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = score;
+            }
+
+            showFeedback(currentQ.answer, selectedButton);
+        }
+
+        function showFeedback(correctAnswer, selectedButton) {
+            const buttons = optionsContainer.querySelectorAll('.option-button');
+            
+            buttons.forEach(button => {
+                const optionText = button.getAttribute('data-option');
+                const isCorrect = optionText === correctAnswer;
+                const isSelected = button === selectedButton;
+
+                // 1. Mark the button as answered (disables hover/interaction)
+                button.classList.add('answered');
+                button.disabled = true;
+
+                // 2. Add visual feedback (Telegram Quiz Style)
+                const iconPlaceholder = button.querySelector('.feedback-placeholder');
+                
+                if (isCorrect) {
+                    // Always mark the correct answer green
+                    button.classList.add('bg-green-100', 'border-green-400');
+                    iconPlaceholder.innerHTML = correctIconSVG;
+                    iconPlaceholder.querySelector('.feedback-icon').classList.add('feedback-icon-visible');
+                    button.classList.remove('bg-gray-100');
+                } else if (isSelected) {
+                    // Mark the user's incorrect choice red
+                    button.classList.add('bg-red-100', 'border-red-400');
+                    iconPlaceholder.innerHTML = incorrectIconSVG;
+                    iconPlaceholder.querySelector('.feedback-icon').classList.add('feedback-icon-visible');
+                    button.classList.remove('bg-gray-100');
+                }
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showFinalScore() {
+            finalScoreText.textContent = `${score} / ${totalQuestions}`;
+            finalScoreModal.classList.remove('hidden');
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            document.getElementById('total-questions').textContent = totalQuestions;
+            loadQuestion();
+        };
+
+    </script> 
+ 
+</body></html>
